@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RETRO CODE BUILDER</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <div class="app">
+        <header class="header">
+            <div class="logo">
+                <h1>RETRO CODE BUILDER</h1>
+                <span class="version">v1.0</span>
+            </div>
+            <div class="subtitle">COMPUTE! Magazine Code Extractor</div>
+        </header>
+
+        <!-- ═══ Issue Browser ═══ -->
+        <div id="browser-view" class="view active">
+            <div class="browser-toolbar">
+                <input type="text" id="search-input" placeholder="SEARCH ISSUES... (e.g. 1984, commodore 64, game)"
+                       class="retro-input">
+                <button id="search-btn" class="retro-btn">SEARCH</button>
+                <button id="reset-btn" class="retro-btn">ALL</button>
+            </div>
+            <div id="issues-grid" class="issues-grid">
+                <div class="loading">CONNECTING TO INTERNET ARCHIVE...</div>
+            </div>
+            <div id="pagination" class="pagination"></div>
+        </div>
+
+        <!-- ═══ Issue Viewer (two-page spread) ═══ -->
+        <div id="viewer-view" class="view">
+            <div class="viewer-toolbar">
+                <button id="back-btn" class="retro-btn">&lt; BACK</button>
+                <span id="issue-title" class="issue-title"></span>
+                <div class="page-nav">
+                    <button id="prev-page" class="retro-btn">&lt;&lt; PREV</button>
+                    <span id="page-info" class="page-info">PAGE 0-1 / 0</span>
+                    <button id="next-page" class="retro-btn">NEXT &gt;&gt;</button>
+                    <input type="number" id="page-jump" class="retro-input page-jump"
+                           min="0" placeholder="#">
+                    <button id="jump-btn" class="retro-btn">GO</button>
+                </div>
+                <button id="ocr-btn" class="retro-btn accent">CODE EXTRACT</button>
+            </div>
+
+            <div class="spread-container">
+                <!-- Left page -->
+                <div class="spread-page" id="page-left">
+                    <div class="page-label" id="page-left-label">-</div>
+                    <div class="page-image-wrap">
+                        <img id="page-image-left" class="page-image hidden" alt="Left page">
+                        <div id="page-loading-left" class="loading">LOADING...</div>
+                    </div>
+                </div>
+                <!-- Right page -->
+                <div class="spread-page" id="page-right">
+                    <div class="page-label" id="page-right-label">-</div>
+                    <div class="page-image-wrap">
+                        <img id="page-image-right" class="page-image hidden" alt="Right page">
+                        <div id="page-loading-right" class="loading">LOADING...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <span class="status" id="status">READY</span>
+            <span class="credits">POWERED BY INTERNET ARCHIVE &mdash; ARROW KEYS TO NAVIGATE</span>
+        </footer>
+    </div>
+
+    <!-- ═══ OCR / Code Extract Modal ═══ -->
+    <div id="ocr-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title" id="modal-title">CODE EXTRACTION</span>
+                <button id="modal-close" class="retro-btn">&times; CLOSE</button>
+            </div>
+            <div class="modal-toolbar">
+                <button id="extract-btn" class="retro-btn accent">&#9654; EXTRACT CODE</button>
+                <button id="raw-text-btn" class="retro-btn">RAW OCR</button>
+                <button id="copy-btn" class="retro-btn">COPY</button>
+                <button id="edit-btn" class="retro-btn">EDIT</button>
+                <label class="retro-label">
+                    PAGES: <input type="number" id="extract-pages" class="retro-input" style="width:50px" value="3" min="1" max="10">
+                </label>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <div class="placeholder">
+PRESS EXTRACT CODE TO SCAN THE
+CURRENT PAGES FOR BASIC LISTINGS.
+
+ADJUST PAGE COUNT TO SCAN MORE
+OR FEWER PAGES AT ONCE.
+                </div>
+            </div>
+            <textarea id="code-editor" class="code-editor hidden" spellcheck="false" wrap="off"></textarea>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,608 @@
+/* ═══════════════════════════════════════════════════════════════════
+   RETRO CODE BUILDER — CRT Terminal Aesthetic
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
+
+/* ── Reset & base ─────────────────────────────────────────────── */
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --green: #33ff33;
+    --green-dim: #1a9a1a;
+    --green-glow: #33ff3366;
+    --green-dark: #0a2a0a;
+    --amber: #ffb000;
+    --amber-dim: #996800;
+    --amber-glow: #ffb00044;
+    --bg: #0a0a0a;
+    --bg-panel: #0d150d;
+    --bg-panel-light: #112211;
+    --border: #1a3a1a;
+    --red: #ff3333;
+    --cyan: #33ffff;
+    --font-display: 'Press Start 2P', monospace;
+    --font-body: 'VT323', monospace;
+}
+
+html, body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.4;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ── CRT scanline overlay ─────────────────────────────────────── */
+
+.scanlines {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 1px,
+        rgba(0, 0, 0, 0.08) 1px,
+        rgba(0, 0, 0, 0.08) 2px
+    );
+    pointer-events: none;
+    z-index: 10000;
+}
+
+/* ── App container ────────────────────────────────────────────── */
+
+.app {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 8px 16px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Header ───────────────────────────────────────────────────── */
+
+.header {
+    text-align: center;
+    padding: 10px 0 8px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.logo h1 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--amber);
+    text-shadow:
+        0 0 10px var(--amber-glow),
+        0 0 20px var(--amber-glow),
+        0 0 40px rgba(255, 176, 0, 0.15);
+    letter-spacing: 2px;
+    animation: flicker 4s infinite alternate;
+}
+
+.version {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--green-dim);
+}
+
+.subtitle {
+    font-size: 16px;
+    color: var(--green-dim);
+    margin-top: 2px;
+    letter-spacing: 1px;
+}
+
+@keyframes flicker {
+    0%, 95%, 100% { opacity: 1; }
+    96% { opacity: 0.92; }
+    97% { opacity: 1; }
+    98% { opacity: 0.95; }
+}
+
+/* ── Shared controls ──────────────────────────────────────────── */
+
+.retro-btn {
+    font-family: var(--font-body);
+    font-size: 16px;
+    padding: 6px 14px;
+    background: var(--bg-panel);
+    color: var(--green);
+    border: 1px solid var(--green-dim);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.1s;
+    white-space: nowrap;
+}
+
+.retro-btn:hover {
+    background: var(--green-dark);
+    color: #55ff55;
+    border-color: var(--green);
+    text-shadow: 0 0 8px var(--green-glow);
+}
+
+.retro-btn:active {
+    background: var(--green-dim);
+    color: var(--bg);
+}
+
+.retro-btn.accent {
+    border-color: var(--amber-dim);
+    color: var(--amber);
+}
+
+.retro-btn.accent:hover {
+    border-color: var(--amber);
+    background: #1a1500;
+    text-shadow: 0 0 8px var(--amber-glow);
+}
+
+.retro-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.retro-input {
+    font-family: var(--font-body);
+    font-size: 18px;
+    padding: 6px 10px;
+    background: var(--bg-panel);
+    color: var(--green);
+    border: 1px solid var(--border);
+    outline: none;
+}
+
+.retro-input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 8px var(--green-glow);
+}
+
+.retro-input::placeholder {
+    color: var(--green-dim);
+    opacity: 0.6;
+}
+
+.retro-label {
+    font-size: 15px;
+    color: var(--green-dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ── Views ────────────────────────────────────────────────────── */
+
+.view { display: none; flex: 1; min-height: 0; }
+.view.active { display: flex; flex-direction: column; }
+
+/* ── Issue Browser ────────────────────────────────────────────── */
+
+.browser-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.browser-toolbar .retro-input {
+    flex: 1;
+    max-width: 500px;
+}
+
+.issues-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.issue-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.issue-card:hover {
+    border-color: var(--green);
+    box-shadow: 0 0 12px var(--green-glow);
+    transform: translateY(-2px);
+}
+
+.issue-card img {
+    width: 100%;
+    max-width: 180px;
+    height: auto;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+}
+
+.issue-card .issue-date {
+    font-size: 14px;
+    color: var(--amber);
+    margin-bottom: 4px;
+}
+
+.issue-card .issue-name {
+    font-size: 15px;
+    color: var(--green);
+    line-height: 1.3;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 0;
+    flex-shrink: 0;
+}
+
+/* ── Issue Viewer ─────────────────────────────────────────────── */
+
+.viewer-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.issue-title {
+    font-size: 16px;
+    color: var(--amber);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.page-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.page-info {
+    font-size: 16px;
+    color: var(--green-dim);
+    min-width: 140px;
+    text-align: center;
+}
+
+.page-jump {
+    width: 70px;
+    text-align: center;
+}
+
+/* ── Two-page spread ──────────────────────────────────────────── */
+
+.spread-container {
+    flex: 1;
+    display: flex;
+    gap: 4px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.spread-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+}
+
+.page-label {
+    font-size: 14px;
+    color: var(--green-dim);
+    text-align: center;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.page-image-wrap {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    position: relative;
+}
+
+.page-image {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+.page-image.hidden { display: none; }
+
+/* ── Modal overlay ────────────────────────────────────────────── */
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal {
+    background: var(--bg);
+    border: 2px solid var(--amber-dim);
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+        0 0 30px rgba(255, 176, 0, 0.15),
+        0 0 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--amber-dim);
+    background: var(--bg-panel);
+}
+
+.modal-title {
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--amber);
+    letter-spacing: 2px;
+}
+
+.modal-toolbar {
+    display: flex;
+    gap: 6px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    font-family: var(--font-body);
+    font-size: 18px;
+    white-space: pre-wrap;
+    line-height: 1.5;
+    min-height: 200px;
+    max-height: 60vh;
+}
+
+.modal-body .placeholder {
+    color: var(--green-dim);
+    text-align: center;
+    padding-top: 40px;
+    line-height: 1.8;
+}
+
+.code-editor {
+    flex: 1;
+    background: var(--bg);
+    color: var(--green);
+    border: none;
+    border-top: 1px solid var(--border);
+    padding: 14px;
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    min-height: 200px;
+    max-height: 60vh;
+}
+
+.code-editor:focus {
+    box-shadow: inset 0 0 12px var(--green-glow);
+}
+
+.hidden { display: none !important; }
+
+/* ── Code listing display ─────────────────────────────────────── */
+
+.listing-block {
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    padding: 10px;
+}
+
+.listing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed var(--border);
+}
+
+.listing-title {
+    color: var(--amber);
+    font-size: 16px;
+}
+
+.listing-meta {
+    color: var(--green-dim);
+    font-size: 14px;
+}
+
+.listing-code {
+    white-space: pre;
+    font-size: 17px;
+    line-height: 1.5;
+    overflow-x: auto;
+}
+
+.listing-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--border);
+}
+
+/* ── Raw text view ────────────────────────────────────────────── */
+
+.raw-text {
+    white-space: pre-wrap;
+    color: var(--green-dim);
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+/* ── Loading indicator ────────────────────────────────────────── */
+
+.loading {
+    color: var(--amber);
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 18px;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* ── Footer ───────────────────────────────────────────────────── */
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 6px;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.status {
+    color: var(--green-dim);
+}
+
+.credits {
+    color: var(--green-dim);
+    opacity: 0.6;
+}
+
+/* ── Scrollbar styling ────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--green-dim);
+    border: 1px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--green);
+}
+
+/* ── Toast notifications ──────────────────────────────────────── */
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 16px;
+    background: var(--bg-panel);
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-family: var(--font-body);
+    font-size: 16px;
+    z-index: 9999;
+    animation: toast-in 0.3s ease;
+}
+
+.toast.error {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+    .spread-container {
+        flex-direction: column;
+    }
+
+    .spread-page {
+        flex: none;
+        height: 45vh;
+    }
+
+    .issues-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .logo h1 {
+        font-size: 14px;
+    }
+
+    .modal {
+        max-width: 100%;
+    }
+}
